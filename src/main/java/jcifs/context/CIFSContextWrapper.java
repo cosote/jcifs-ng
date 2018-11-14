@@ -24,6 +24,7 @@ import java.net.URLStreamHandler;
 import jcifs.BufferCache;
 import jcifs.CIFSContext;
 import jcifs.CIFSException;
+import jcifs.CIFSStatistics;
 import jcifs.Configuration;
 import jcifs.Credentials;
 import jcifs.DfsResolver;
@@ -45,6 +46,7 @@ public class CIFSContextWrapper implements CIFSContext {
 
     private final CIFSContext delegate;
     private Handler wrappedHandler;
+    private CIFSStatistics cifsStatistics;
 
 
     /**
@@ -54,6 +56,7 @@ public class CIFSContextWrapper implements CIFSContext {
      */
     public CIFSContextWrapper ( CIFSContext delegate ) {
         this.delegate = delegate;
+        this.cifsStatistics = new CIFSStatistics();
     }
 
 
@@ -187,5 +190,14 @@ public class CIFSContextWrapper implements CIFSContext {
     @Override
     public boolean close () throws CIFSException {
         return this.delegate.close();
+    }
+    
+    /**
+     *  {@inheritDoc}
+     *  
+     *  @see jcifs.CIFSContext#getCIFSStatistics()
+     */
+    public CIFSStatistics getCIFSStatistics() {
+    	return cifsStatistics;
     }
 }

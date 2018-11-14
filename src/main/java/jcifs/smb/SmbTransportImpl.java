@@ -893,6 +893,7 @@ class SmbTransportImpl extends Transport implements SmbTransportInternal, SmbCon
 
                 this.out.write(buffer, 0, 4 + n);
                 this.out.flush();
+                getContext().getCIFSStatistics().increaseDoSend();
             }
         }
         finally {

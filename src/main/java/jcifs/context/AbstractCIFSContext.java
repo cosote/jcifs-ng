@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import jcifs.CIFSContext;
 import jcifs.CIFSException;
+import jcifs.CIFSStatistics;
 import jcifs.Credentials;
 import jcifs.smb.NtlmPasswordAuthenticator;
 
@@ -35,6 +36,7 @@ public abstract class AbstractCIFSContext extends Thread implements CIFSContext 
 
     private static final Logger log = LoggerFactory.getLogger(AbstractCIFSContext.class);
     private boolean closed;
+    private CIFSStatistics cifsStatistics;
 
 
     /**
@@ -42,6 +44,7 @@ public abstract class AbstractCIFSContext extends Thread implements CIFSContext 
      */
     public AbstractCIFSContext () {
         Runtime.getRuntime().addShutdownHook(this);
+        cifsStatistics = new CIFSStatistics();
     }
 
 
@@ -157,5 +160,14 @@ public abstract class AbstractCIFSContext extends Thread implements CIFSContext 
         catch ( CIFSException e ) {
             log.warn("Failed to close context on shutdown", e);
         }
+    }
+
+    /**
+     *  {@inheritDoc}
+     *  
+     *  @see jcifs.CIFSContext#getCIFSStatistics()
+     */
+    public CIFSStatistics getCIFSStatistics() {
+    	return cifsStatistics;
     }
 }

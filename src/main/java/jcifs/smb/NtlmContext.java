@@ -256,10 +256,12 @@ public class NtlmContext implements SSPContext {
                         || !msg2.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY) ) ) {
                     throw new SmbUnsupportedOperationException("Server does not support extended NTLMv2 key exchange");
                 }
-
-                if ( !msg2.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_SIGN) ) {
+                
+                /* Disabled to patch NetApp ONTAP 8.3.2 not having NTLMSSP_NEGOTIATE_SIGN flagged TODO check if existing/new config should cover it
+                if (!msg2.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_SIGN) ) {
                     throw new SmbUnsupportedOperationException("Server does not support basic NTLM signature key exchange");
                 }
+                */
                 else if ( !msg2.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_128) ) {
                     throw new SmbUnsupportedOperationException("Server does not support 128-bit keys");
                 }

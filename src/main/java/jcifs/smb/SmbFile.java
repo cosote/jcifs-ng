@@ -2267,17 +2267,20 @@ public class SmbFile extends URLConnection implements SmbResource, SmbConstants 
 
     @Override
     public ACE[] getSecurity ( boolean resolveSids ) throws IOException {
+        return getSecurityDescriptor(resolveSids, false).getAces();
+    }
+
+    public SecurityDescriptor getSecurityDescriptor ( boolean resolveSids, boolean withOwnerAndGroup ) throws IOException {
         try ( SmbTreeHandleImpl th = ensureTreeConnected() ) {
-            SecurityDescriptor desc = querySecurity(th, SecurityInfo.DACL_SECURITY_INFO);
+            SecurityDescriptor desc = querySecurity(th, !withOwnerAndGroup ? SecurityInfo.DACL_SECURITY_INFO : SecurityInfo.DACL_SECURITY_INFO | SecurityInfo.OWNER_SECURITY_INFO | SecurityInfo.GROUP_SECURITY_INFO);
             ACE[] aces = desc.getAces();
             if ( aces != null ) {
                 processAces(aces, resolveSids);
             }
 
-            return aces;
+            return desc;
         }
     }
-
 
     @Override
     public SID getOwnerUser () throws IOException {

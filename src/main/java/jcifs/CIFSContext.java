@@ -162,4 +162,8 @@ public interface CIFSContext {
      */
     boolean renewCredentials ( String locationHint, Throwable error );
 
+    /**
+     * @return CIFSStatistics objects about CIFS statistics
+     */
+    CIFSStatistics getCIFSStatistics();
 }

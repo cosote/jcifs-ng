@@ -183,6 +183,14 @@
 							<from>*</from>
 							<to>*</to>
 						</difference>
+						<difference>
+							<!-- Ignore new methods in interface CIFSContext -->
+							<className>**/CIFSContext</className>
+							<differenceType>7012</differenceType>
+							<method>*</method>
+							<from>*</from>
+							<to>*</to>
+						</difference>
 					</ignored>
 				</configuration>
 			</plugin>

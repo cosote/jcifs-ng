@@ -658,6 +658,10 @@ class SmbTreeImpl implements SmbTreeInternal {
         if ( rsvc == null && !transport.isSMB2() ) {
             throw new SmbException("Service is NULL");
         }
+        if (rsvc == null) {
+        	// as service is used to match, always fall back to server IP
+        	rsvc = transport.getRemoteAddress().getHostAddress();
+        }
         this.service = rsvc;
         this.inDfs = response.isShareDfs();
         this.treeNum = TREE_CONN_COUNTER.incrementAndGet();

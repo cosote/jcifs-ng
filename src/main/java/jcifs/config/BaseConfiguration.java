@@ -128,6 +128,7 @@ public class BaseConfiguration implements Configuration {
     protected int smbListCount = 200;
     protected long smbAttributeExpiration = 5000L;
     protected boolean ignoreCopyToException = false;
+    protected boolean forceClientSideCopy = false;
     protected int maxRequestRetries = 2;
     protected boolean traceResourceUsage;
     protected boolean strictResourceLifecycle;
@@ -807,5 +808,14 @@ public class BaseConfiguration implements Configuration {
             this.disallowCompound = new HashSet<>(Arrays.asList("Smb2SessionSetupRequest", "Smb2TreeConnectRequest"));
         }
     }
+    
+	public boolean isForceClientSideCopy() {
+		return forceClientSideCopy;
+	}
+
+
+	public void setForceClientSideCopy(boolean forceClientSideCopy) {
+		this.forceClientSideCopy = forceClientSideCopy;
+	}
 
 }

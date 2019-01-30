@@ -669,6 +669,14 @@ public interface Configuration {
      */
     boolean isIgnoreCopyToException ();
 
+    /**
+     * 
+     * 
+     * Property <tt>jcifs.smb.client.forceClientSideCopy</tt> (boolean, false)
+     * 
+     * @return whether to forcefully do file copy client side
+     */
+	public boolean isForceClientSideCopy ();
 
     /**
      * @param cmd

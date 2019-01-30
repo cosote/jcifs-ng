@@ -870,4 +870,10 @@ public class DelegatingConfiguration implements Configuration {
     public byte[] getMachineId () {
         return this.delegate.getMachineId();
     }
+
+
+	@Override
+	public boolean isForceClientSideCopy() {
+		return this.delegate.isForceClientSideCopy();
+	}
 }

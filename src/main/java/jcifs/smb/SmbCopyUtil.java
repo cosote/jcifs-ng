@@ -106,7 +106,7 @@ final class SmbCopyUtil {
     static void copyFile ( SmbFile src, SmbFile dest, byte[][] b, int bsize, WriterThread w, SmbTreeHandleImpl sh, SmbTreeHandleImpl dh )
             throws SmbException {
 
-        if ( sh.isSMB2() && dh.isSMB2() && sh.isSameTree(dh) ) {
+        if ( !src.getContext().getConfig().isForceClientSideCopy() && sh.isSMB2() && dh.isSMB2() && sh.isSameTree(dh) ) {
             try {
                 serverSideCopy(src, dest, sh, dh, false);
                 return;

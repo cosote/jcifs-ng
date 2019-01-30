@@ -134,6 +134,7 @@ public final class PropertyConfiguration extends BaseConfiguration implements Co
 
         this.smbAttributeExpiration = Config.getLong(p, "jcifs.smb.client.attrExpirationPeriod", 5000L);
         this.ignoreCopyToException = Config.getBoolean(p, "jcifs.smb.client.ignoreCopyToException", false);
+        this.forceClientSideCopy = Config.getBoolean(p, "jcifs.smb.client.forceClientSideCopy", false);
         this.broadcastAddress = Config.getInetAddress(p, "jcifs.netbios.baddr", null);
 
         this.traceResourceUsage = Config.getBoolean(p, "jcifs.traceResources", false);

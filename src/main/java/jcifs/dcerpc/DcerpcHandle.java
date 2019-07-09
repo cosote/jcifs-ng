@@ -78,9 +78,19 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
             case 2:
                 if ( ch == '[' ) {
                     String server = str.substring(mark, si).trim();
-                    if ( server.length() == 0 )
-                        server = "127.0.0.1";
-                    binding = new DcerpcBinding(proto, str.substring(mark, si));
+                    if ( server.length() == 0 ) {
+                        // this can also be a v6 address within brackets, look ahead required
+                        int nexts = str.indexOf('[', si + 1);
+                        int nexte = str.indexOf(']', si);
+                        if ( nexts >= 0 && nexte >= 0 && nexte == nexts - 1 ) {
+                            server = str.substring(si, nexte + 1);
+                            si = nexts;
+                        }
+                        else {
+                            server = "127.0.0.1";
+                        }
+                    }
+                    binding = new DcerpcBinding(proto, server);
                     mark = si + 1;
                     state = 5;
                 }
@@ -92,6 +102,7 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
                 }
                 else if ( ch == ',' || ch == ']' ) {
                     String val = str.substring(mark, si).trim();
+                    mark = si + 1;
                     if ( key == null )
                         key = "endpoint";
                     if ( binding != null ) {
@@ -147,7 +158,7 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
     /**
      * @return the binding
      */
-    DcerpcBinding getBinding () {
+    public DcerpcBinding getBinding () {
         return this.binding;
     }
 
@@ -243,13 +254,14 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
             int have = doSendReceiveFragment(out, off, msg.length, inB);
 
             if ( have != 0 ) {
-                setupReceivedFragment(buf);
-                buf.setIndex(0);
-                msg.decode_header(buf);
+                NdrBuffer hdrBuf = new NdrBuffer(inB, 0);
+                setupReceivedFragment(hdrBuf);
+                hdrBuf.setIndex(0);
+                msg.decode_header(hdrBuf);
             }
 
             NdrBuffer msgBuf;
-            if ( have == 0 || !msg.isFlagSet(DCERPC_LAST_FRAG) ) {
+            if ( have != 0 && !msg.isFlagSet(DCERPC_LAST_FRAG) ) {
                 msgBuf = new NdrBuffer(receiveMoreFragments(msg, inB), 0);
             }
             else {
@@ -332,8 +344,7 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
      * @throws NdrException
      */
     private byte[] receiveMoreFragments ( DcerpcMessage msg, byte[] in ) throws IOException, DcerpcException, NdrException {
-        int off = 0;
-        int len = msg.ptype == 2 ? msg.length : 24;
+        int off = msg.ptype == 2 ? msg.length : 24;
         byte[] fragBytes = new byte[this.max_recv];
         NdrBuffer fragBuf = new NdrBuffer(fragBytes, 0);
         while ( !msg.isFlagSet(DCERPC_LAST_FRAG) ) {
@@ -345,11 +356,11 @@ public abstract class DcerpcHandle implements DcerpcConstants, AutoCloseable {
             if ( ( off + stub_frag_len ) > in.length ) {
                 // shouldn't happen if alloc_hint is correct or greater
                 byte[] tmp = new byte[off + stub_frag_len];
-                System.arraycopy(in, 0, tmp, 0, len);
+                System.arraycopy(in, 0, tmp, 0, off);
                 in = tmp;
             }
-            System.arraycopy(fragBytes, 24, in, len, stub_frag_len);
-            len += stub_frag_len;
+            System.arraycopy(fragBytes, 24, in, off, stub_frag_len);
+            off += stub_frag_len;
         }
         return in;
     }

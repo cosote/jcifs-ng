@@ -83,7 +83,7 @@ class SmbTreeImpl implements SmbTreeInternal {
     private final String service0;
     private final SmbSessionImpl session;
 
-    private volatile int tid;
+    private volatile int tid = -1;
     private volatile String service = "?????";
     private volatile boolean inDfs, inDomainDfs;
     private volatile long treeNum; // used by SmbFile.isOpen
@@ -275,7 +275,7 @@ class SmbTreeImpl implements SmbTreeInternal {
      * @return whether the tree is connected
      */
     public boolean isConnected () {
-        return this.tid != 0 && this.session.isConnected() && this.connectionState.get() == 2;
+        return this.tid != -1 && this.session.isConnected() && this.connectionState.get() == 2;
     }
 
 
@@ -436,9 +436,6 @@ class SmbTreeImpl implements SmbTreeInternal {
             // and send it as a separate request instead
             String svc = null;
             int t = this.tid;
-            if ( t == 0 ) {
-                throw new SmbException("Tree id is 0");
-            }
             request.setTid(t);
 
             if ( !transport.isSMB2() ) {
@@ -453,7 +450,7 @@ class SmbTreeImpl implements SmbTreeInternal {
 
             }
 
-            if ( this.inDfs && !"IPC".equals(svc) && !"IPC$".equals(this.share) && request instanceof RequestWithPath ) {
+            if ( this.isDfs() && !"IPC".equals(svc) && !"IPC$".equals(this.share) && request instanceof RequestWithPath ) {
                 /*
                  * When DFS is in action all request paths are
                  * full UNC paths minus the first backslash like
@@ -463,6 +460,9 @@ class SmbTreeImpl implements SmbTreeInternal {
                  */
                 RequestWithPath preq = (RequestWithPath) request;
                 if ( preq.getPath() != null && preq.getPath().length() > 0 ) {
+                    if ( log.isDebugEnabled() ) {
+                        log.debug(String.format("Setting DFS request path from %s to %s", preq.getPath(), preq.getFullUNCPath()));
+                    }
                     preq.setResolveInDfs(true);
                     preq.setPath(preq.getFullUNCPath());
                 }
@@ -554,6 +554,10 @@ class SmbTreeImpl implements SmbTreeInternal {
                 else if ( before == 2 ) {
                     // concurrently connected
                     return null;
+                }
+
+                if ( log.isDebugEnabled() ) {
+                    log.debug("Connection state was " + before);
                 }
 
                 try {
@@ -723,7 +727,10 @@ class SmbTreeImpl implements SmbTreeInternal {
             throw new SMBProtocolDowngradeException("Signature error during negotiate validation", e);
         }
         catch ( SmbException e ) {
-            log.debug("VALIDATE_NEGOTIATE_INFO returned error", e);
+            if ( log.isDebugEnabled() ) {
+                log.debug(String.format("VALIDATE_NEGOTIATE_INFO response code 0x%x", e.getNtStatus()));
+            }
+            log.trace("VALIDATE_NEGOTIATE_INFO returned error", e);
             if ( ( req.getResponse().isReceived() && req.getResponse().isVerifyFailed() ) || e.getNtStatus() == NtStatus.NT_STATUS_ACCESS_DENIED ) {
                 // this is the signature error
                 throw new SMBProtocolDowngradeException("Signature error during negotiate validation", e);
@@ -828,7 +835,7 @@ class SmbTreeImpl implements SmbTreeInternal {
                         }
                     }
 
-                    if ( !inError && this.tid != 0 ) {
+                    if ( !inError && this.tid != -1 ) {
                         try {
                             if ( transport.isSMB2() ) {
                                 Smb2TreeDisconnectRequest req = new Smb2TreeDisconnectRequest(sess.getConfig());

@@ -302,12 +302,12 @@
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>1.8</version>
 				<executions>
-					<execution>
+					<!-- <execution>
 						<id>parse-version</id>
 						<goals>
 							<goal>parse-version</goal>
 						</goals>
-					</execution>
+					</execution> -->
 				</executions>
 			</plugin>
 
